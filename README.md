@@ -57,3 +57,34 @@ Random Forest/
   - PCA and Random Forest hyperparameters
   - Performance metrics and results analysis
   - Future improvement recommendations
+
+### Deep Learning Classification Model
+
+```
+Deep Learning/
+│
+├── main.ipynb                        # Main Jupyter notebook with complete pipeline
+└── README.md                         # Model documentation and specifications
+
+```
+
+#### Deep Learning File Descriptions
+
+`main.ipynb` - Main Jupyter notebook containing:
+  - Kaggle dataset download and authentication
+  - Data loading from ODIR-5K dataset (12,460 total images)
+  - Image preprocessing (224×224, ImageNet normalization)
+  - Separate data augmentation for train/validation sets
+  - ResNet34 model with custom classifier (21.4M parameters)
+  - Training with AdamW optimizer and learning rate scheduling
+  - Comprehensive evaluation (15+ metrics including ROC AUC, PR AUC)
+  - Threshold optimization and error analysis
+
+`README.md` - Comprehensive documentation including:
+  - Model architecture (ResNet34 backbone + custom classifier)
+  - Dataset split and class distribution
+  - Data augmentation and preprocessing pipeline
+  - Training configuration and hyperparameters
+  - Performance metrics and evaluation results
+  - Key improvements over baseline models
+  - Future enhancement recommendations
