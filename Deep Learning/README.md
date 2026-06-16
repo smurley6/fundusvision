@@ -2,49 +2,42 @@
 
 ## Overview
 
-This module implements an improved deep learning pipeline using ResNet34 with comprehensive data augmentation, learning rate scheduling, and advanced evaluation metrics for binary classification of fundus images (Normal vs Abnormal) on the ODIR-5K dataset.
+This module implements a deep learning pipeline using ResNet34 (transfer learning) with data augmentation, learning-rate scheduling, threshold optimization, and comprehensive evaluation metrics for **binary classification of fundus images (Normal vs Abnormal)** on the ODIR-5K dataset.
 
 ## Model Architecture
 
-**Pipeline:** Raw Images → Preprocessing → Data Augmentation → ResNet34 Backbone → Custom Classifier → Binary Predictions
+**Pipeline:** Raw Images → Preprocessing → Data Augmentation → ResNet34 Backbone → Custom Classifier → Binary Prediction
 
 **Backbone:** ResNet34 (pretrained on ImageNet)
 **Classifier:** 3-layer fully connected network with BatchNorm and Dropout
 
 ## Dataset
 
-- **Source:** ODIR-5K (Ocular Disease Intelligent Recognition)
-- **Total Images:** 12,460 fundus images (left and right eyes combined)
-- **Training Set:** 8,722 images (70%)
-- **Validation Set:** 1,869 images (15%)
-- **Test Set:** 1,869 images (15%)
-- **Task:** Binary classification (Normal vs Abnormal)
-- **Class Distribution:**
-  - Normal: 2,101 patients (33.7%)
-  - Abnormal: 4,291 patients (66.3%)
+- **Source:** ODIR-5K (Ocular Disease Intelligent Recognition) — downloaded from Kaggle at runtime
+- **Unique images:** 6,392 fundus photographs (each physical image used exactly once)
+- **Labels:** Derived **per eye** from that eye's diagnostic keyword — an eye is *Normal* only when its keyword is `normal fundus` (ignoring non-pathological capture artifacts such as `lens dust`); otherwise *Abnormal*
+- **Split:** **Patient-grouped** and class-stratified via `StratifiedGroupKFold`, so no patient (and therefore no image) appears in more than one split:
+  - Train: 4,560 images (≈ 2,398 patients, ≈ 55% abnormal)
+  - Validation: 923 images (≈ 480 patients, ≈ 54% abnormal)
+  - Test: 909 images (≈ 480 patients, ≈ 56% abnormal)
 
-## Project Structure
-
-```
-Deep Learning/
-│
-├── main.ipynb                        # Main Jupyter notebook with complete pipeline
-└── README.md                         # This file
-```
+> **Why per-eye + patient-grouped?** The earlier pipeline looped over both eyes of
+> every CSV row, duplicating each image ~1.95× (6,392 images → "12,460 pairs"), then
+> split at the row level — placing the *same* image in both train and test. It also
+> applied the patient-level Normal flag to both eyes. The current pipeline deduplicates,
+> labels each eye independently, and groups the split by patient to eliminate leakage.
 
 ## File Description
 
-`main.ipynb` - Main Jupyter notebook containing:
+`main.ipynb` — Main Jupyter notebook containing:
   - Kaggle dataset download and authentication
-  - Data loading and image-label pair creation
-  - Separate transforms for training (with augmentation) and validation (without augmentation)
+  - Per-eye label construction, deduplication, and patient-grouped split (with leakage assertions)
+  - Separate transforms for training (augmented) and validation/test (not augmented)
   - Custom PyTorch Dataset and DataLoader implementation
-  - ResNet34 model architecture with custom classifier head
-  - Training loop with learning rate scheduling and early stopping
-  - Comprehensive evaluation with 15+ metrics
-  - Threshold optimization using F1 score and Youden's Index
+  - ResNet34 model with custom classifier head
+  - Training loop with LR scheduling, early stopping, and checkpointing
+  - Comprehensive evaluation (15+ metrics) and threshold optimization
   - Error analysis and misclassification visualization
-  - Model checkpointing and result export
 
 ## Model Configuration
 
@@ -57,8 +50,8 @@ Deep Learning/
 - Random horizontal flip (p=0.5)
 - Random vertical flip (p=0.2)
 - Random rotation (±15°)
-- Color jitter (brightness: 0.7-1.3, contrast/saturation: ±0.2)
-- Random affine (translation: ±5%, shear: 5°)
+- Color jitter (brightness 0.7–1.3, contrast/saturation ±0.2)
+- Random affine (translation ±5%, shear 5°)
 - Gaussian blur (kernel=3, p=0.3)
 
 ### ResNet34 Architecture
@@ -66,7 +59,6 @@ Deep Learning/
 - **Input:** 224×224×3 RGB images
 - **Feature Dimensions:** 512 (after global average pooling)
 - **Total Parameters:** 21,449,922
-- **Trainable Parameters:** 21,449,922
 
 ### Custom Classifier Head
 ```
@@ -77,76 +69,42 @@ Deep Learning/
 
 ### Training Configuration
 - **Optimizer:** AdamW (lr=1e-4, weight_decay=1e-4)
-- **Loss Function:** Binary Cross-Entropy Loss with class weights
-  - Normal weight: 1.504
-  - Abnormal weight: 0.749
+- **Loss Function:** BCE loss with class weights computed from the **training split**
 - **Learning Rate Scheduler:** CosineAnnealingWarmRestarts (T_0=10, T_mult=2, eta_min=1e-6)
 - **Batch Size:** 16
-- **Max Epochs:** 50
-- **Early Stopping:** Patience of 10 epochs
-- **Device:** CUDA (GPU acceleration)
+- **Max Epochs:** 50, **Early Stopping:** patience of 10 epochs
+- **Device:** CUDA → MPS (Apple Silicon) → CPU (auto-selected)
 
 ## Performance Metrics
 
-The model achieves comprehensive evaluation across multiple dimensions:
+The notebook reports a full battery of metrics on the test set at the optimal threshold:
+classification (accuracy, balanced accuracy, precision/PPV, recall/sensitivity, specificity,
+NPV, F1), discrimination (ROC AUC, PR AUC), agreement (MCC, Cohen's Kappa, Youden's Index),
+and the confusion-matrix components.
 
-### Classification Metrics (Test Set, Optimal Threshold)
-- **Accuracy:** Reported in notebook
-- **Balanced Accuracy:** Accounts for class imbalance
-- **Precision (PPV):** Positive Predictive Value
-- **Recall (Sensitivity):** True Positive Rate
-- **Specificity:** True Negative Rate
-- **F1 Score:** Harmonic mean of precision and recall
-- **NPV:** Negative Predictive Value
+> **Note on prior numbers:** Any classification metrics reported before the leakage fix
+> (image-level split with duplicated images) were optimistically inflated. Re-run the
+> notebook on the corrected patient-grouped split to obtain honest performance figures.
 
-### Discrimination Metrics
-- **ROC AUC:** Area Under the Receiver Operating Characteristic Curve
-- **PR AUC:** Area Under the Precision-Recall Curve
-- **Optimal Threshold:** Determined via F1 score and Youden's Index optimization
+## Key Implementation Details
 
-### Agreement Metrics
-- **Matthews Correlation Coefficient (MCC):** Overall quality measure
-- **Cohen's Kappa:** Agreement beyond chance
-- **Youden's Index:** Sensitivity + Specificity - 1
-
-### Confusion Matrix Components
-- True Positives (TP), True Negatives (TN)
-- False Positives (FP), False Negatives (FN)
-
-## Key Improvements Over Baseline
-
-This improved deep learning model addresses limitations of traditional ML approaches:
-
-1. **Separate Transforms:** Training uses augmentation; validation/test do not (prevents data leakage)
-2. **Better Architecture:** ResNet34 instead of ResNet18 with enhanced classifier head
-3. **Learning Rate Scheduling:** Prevents training plateaus and enables better convergence
-4. **Class Weighting:** Handles imbalanced dataset (66.3% abnormal vs 33.7% normal)
-5. **Comprehensive Evaluation:** 15+ metrics with advanced visualizations
-6. **Threshold Optimization:** Finds optimal decision boundary for classification
-7. **Error Analysis:** Visualizes misclassifications (false positives and false negatives)
-8. **Real-time Monitoring:** Training metrics plotted live during training
-
-## Visualizations
-
-The notebook generates comprehensive visualizations including:
-- Training history (loss, accuracy, F1, learning rate)
-- Class distribution analysis
-- Sample fundus images with labels
-- Confusion matrix (counts and percentages)
-- ROC curve and Precision-Recall curve
-- Prediction probability distributions
-- Metrics comparison bar charts
-- Threshold optimization curves
-- Misclassification examples (false positives and false negatives)
+1. **No data leakage** — deduplicated images, per-eye labels, patient-grouped class-stratified split.
+2. **Separate transforms** — augmentation on train only; validation/test untouched.
+3. **Correct checkpointing** — the best model is saved as a pure `state_dict` and reloaded
+   reliably (the original `torch.load` raised `UnpicklingError` under PyTorch ≥ 2.6's
+   `weights_only=True` default and silently left evaluation on stale last-epoch weights).
+4. **Learning-rate scheduling** — CosineAnnealingWarmRestarts.
+5. **Threshold optimization** — optimal decision boundary via F1 score and Youden's Index.
+6. **Comprehensive evaluation + error analysis** — 15+ metrics, ROC/PR curves, misclassification visualization.
 
 ## Running the Notebook
 
-1. **Google Colab:** Upload to Colab and run with GPU runtime
-2. **Kaggle Authentication:** Upload `kaggle.json` API key when prompted
-3. **Dataset Download:** Automatic via Kaggle API (ODIR-5K dataset)
-4. **Dependencies:** Automatically installed via `!pip install` command
-5. **Execution:** Run cells sequentially to reproduce results
-6. **Output:** Model checkpoints (`best_model.pth`, `final_model_complete.pth`) and evaluation plots
+1. **Google Colab:** Upload to Colab and run with a GPU runtime.
+2. **Kaggle Authentication:** Upload `kaggle.json` when prompted.
+3. **Dataset Download:** Automatic via the Kaggle API (ODIR-5K).
+4. **Local run (Apple Silicon / CPU):** The data paths auto-detect a local `data/` checkout;
+   training uses MPS when available. (Images must be present locally — they are not stored in git.)
+5. **Execution:** Run cells sequentially. Outputs: `best_model.pth` / `best_model_weights.pth` and evaluation plots.
 
 ## Required Dependencies
 
@@ -160,24 +118,23 @@ The notebook generates comprehensive visualizations including:
 
 ## Clinical Relevance
 
-This binary classification model serves as a screening tool for fundus images:
-- **High Sensitivity:** Minimizes false negatives (missed diseases)
-- **High Specificity:** Minimizes false positives (unnecessary referrals)
-- **Optimal Threshold:** Balances sensitivity and specificity for clinical use
-- **Comprehensive Metrics:** Provides clinically relevant evaluation (PPV, NPV, etc.)
+This binary classifier is a **screening** tool for fundus images:
+- **High sensitivity:** minimizes false negatives (missed disease)
+- **High specificity:** minimizes false positives (unnecessary referrals)
+- **Optimal threshold:** balances sensitivity and specificity for clinical use
 
 ## Future Improvements
 
-1. **Multi-label Classification:** Predict specific diseases (Diabetes, Glaucoma, AMD, etc.)
-2. **Ensemble Methods:** Combine multiple models (ResNet34, ResNet50, EfficientNet)
-3. **Attention Mechanisms:** Add spatial attention to focus on lesion regions
-4. **External Validation:** Test on other datasets (Messidor, EyePACS, etc.)
-5. **Explainability:** Implement Grad-CAM for visualization of decision regions
-6. **Test-Time Augmentation:** Average predictions over multiple augmented versions
-7. **Advanced Architectures:** Experiment with Vision Transformers (ViT) or Swin Transformers
+1. **Multi-label classification** — predict specific diseases (Diabetes, Glaucoma, AMD, etc.)
+2. **Ensemble methods** — combine ResNet34, ResNet50, EfficientNet
+3. **Attention mechanisms** — focus on lesion regions
+4. **External validation** — Messidor, EyePACS, etc.
+5. **Explainability** — Grad-CAM over decision regions
+6. **Test-time augmentation**
+7. **Advanced architectures** — Vision Transformers (ViT), Swin Transformers
 
 ## References
 
 - Dataset: ODIR-5K (Ocular Disease Intelligent Recognition)
 - Backbone: ResNet34 (He et al., 2015)
-- Framework: PyTorch 2.9.0+
+- Framework: PyTorch 2.x

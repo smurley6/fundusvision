@@ -1,0 +1,18 @@
+# Image data is sourced from the Kaggle ODIR-5K dataset (the notebooks
+# download it automatically). It is not stored in git.
+data/preprocessed_images/
+data/ODIR-5K/
+
+# Model checkpoints and exported artifacts
+*.pth
+model_metrics.csv
+*_evaluation*.png
+
+# Python
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# OS / editor junk
+.DS_Store
+Thumbs.db
