@@ -1,0 +1,13 @@
+{
+  "run_dir": "/Users/smurley6/fundusvision/results/segmentation",
+  "test": {
+    "pixel_accuracy": 0.9752767259247449,
+    "iou": 0.6932076171633486,
+    "dice": 0.8188099440807948,
+    "precision": 0.8580925324426838,
+    "recall": 0.7829665456688701,
+    "mean_image_dice": 0.8029762890552266,
+    "images": 200
+  },
+  "test_images": 200
+}

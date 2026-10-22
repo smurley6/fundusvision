@@ -1,0 +1,28 @@
+{
+  "config": {
+    "data_dir": "data/vessel_segmentation",
+    "output_dir": "results/segmentation_linear",
+    "image_size": 224,
+    "batch_size": 8,
+    "epochs": 15,
+    "lr": 0.0001,
+    "val_fraction": 0.2,
+    "augment": true,
+    "seed": 42,
+    "num_workers": 0,
+    "cache": true,
+    "device": null,
+    "progress": false,
+    "extra": {}
+  },
+  "summary": {
+    "best_epoch": 11,
+    "best_val_dice": 0.6748622497689903,
+    "epochs_run": 15,
+    "train_images": 480,
+    "val_images": 120,
+    "parameters": 31043586,
+    "device": "mps",
+    "minutes": 19.356225534280142
+  }
+}

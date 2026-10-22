@@ -1,18 +1,30 @@
-# Image data is sourced from the Kaggle ODIR-5K dataset (the notebooks
-# download it automatically). It is not stored in git.
+# Datasets are downloaded from Kaggle (`fundusvision download ...`), never committed.
+data/odir5k/
+data/vessel_segmentation/
 data/preprocessed_images/
 data/ODIR-5K/
+*.zip
 
-# Model checkpoints and exported artifacts
+# Trained weights and large run artefacts (metrics.json / history.json ARE committed).
+*.pt
 *.pth
-model_metrics.csv
-*_evaluation*.png
+results/**/*.npz
 
 # Python
+.venv/
 __pycache__/
 *.pyc
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+.ruff_cache/
 .ipynb_checkpoints/
 
-# OS / editor junk
+# Kaggle credentials must never enter the repo
+kaggle.json
+
+# OS / editor
 .DS_Store
 Thumbs.db
+.claude/

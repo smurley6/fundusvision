@@ -1,0 +1,32 @@
+{
+  "config": {
+    "data_dir": "data/vessel_segmentation",
+    "output_dir": "results/segmentation",
+    "image_size": 224,
+    "batch_size": 8,
+    "epochs": 20,
+    "lr": 0.0001,
+    "val_fraction": 0.2,
+    "augment": false,
+    "cosine": false,
+    "select_on": "dice",
+    "seed": 42,
+    "num_workers": 0,
+    "cache": true,
+    "device": null,
+    "progress": false,
+    "extra": {}
+  },
+  "summary": {
+    "best_epoch": 20,
+    "best_val_dice": 0.8389548540869209,
+    "best_val_loss": 0.07099634731809298,
+    "selected_on": "dice",
+    "epochs_run": 20,
+    "train_images": 480,
+    "val_images": 120,
+    "parameters": 31043586,
+    "device": "mps",
+    "minutes": 21.293004699548085
+  }
+}

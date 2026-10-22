@@ -1,0 +1,13 @@
+{
+  "run_dir": "results/segmentation_linear",
+  "test": {
+    "pixel_accuracy": 0.954574198820153,
+    "iou": 0.4861359731985445,
+    "dice": 0.6542281217407794,
+    "precision": 0.7159204095726314,
+    "recall": 0.6023246102255475,
+    "mean_image_dice": 0.6317245123380452,
+    "images": 200
+  },
+  "test_images": 200
+}

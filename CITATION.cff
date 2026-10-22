@@ -1,0 +1,25 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "FundusVision: retinal disease screening and vessel segmentation from fundus photographs"
+type: software
+version: 1.0.0
+date-released: 2026-10-21
+repository-code: "https://github.com/smurley6/fundusvision"
+license: MIT
+authors:
+  - family-names: Murley
+    given-names: Steven
+  - family-names: Joshi
+    given-names: Sohum
+  - family-names: Bakr
+    given-names: Adam
+  - family-names: Wei
+    given-names: Yuhan
+  - family-names: Smith
+    given-names: Connor
+keywords:
+  - fundus
+  - retina
+  - medical imaging
+  - segmentation
+  - deep learning

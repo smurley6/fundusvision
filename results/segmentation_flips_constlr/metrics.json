@@ -1,0 +1,13 @@
+{
+  "run_dir": "results/segmentation_flips_constlr",
+  "test": {
+    "pixel_accuracy": 0.9549590441645408,
+    "iou": 0.4915411535618949,
+    "dice": 0.6591050503542104,
+    "precision": 0.7164199660281088,
+    "recall": 0.6102814141518539,
+    "mean_image_dice": 0.6303335504182739,
+    "images": 200
+  },
+  "test_images": 200
+}
