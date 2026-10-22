@@ -143,9 +143,7 @@ Adding a backbone or a dataset is a one-module change.
 ## Team
 
 Georgia Tech CS 7641 Machine Learning, Fall 2025. Steven Murley (project lead), Sohum Joshi,
-Adam Bakr, Yuhan Wei, Connor Smith. The original course proposal page lives at
-[mlproject-blue.vercel.app](https://mlproject-blue.vercel.app); the numbers there predate the
-leakage fix described above.
+Adam Bakr, Yuhan Wei, Connor Smith.
 
 ## Citation
 
